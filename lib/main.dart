@@ -1,133 +1,170 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CalculatorApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CalculatorApp extends StatelessWidget {
+  const CalculatorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calculator Consum Combustibil',
+      title: 'Calculator de Reducere',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const FuelCalculatorScreen(),
+      home: const DiscountCalculatorPage(),
     );
   }
 }
 
-class FuelCalculatorScreen extends StatefulWidget {
-  const FuelCalculatorScreen({super.key});
+class DiscountCalculatorPage extends StatefulWidget {
+  const DiscountCalculatorPage({super.key});
 
   @override
-  State<FuelCalculatorScreen> createState() => _FuelCalculatorScreenState();
+  State<DiscountCalculatorPage> createState() => _DiscountCalculatorPageState();
 }
 
-class _FuelCalculatorScreenState extends State<FuelCalculatorScreen> {
-  final TextEditingController _distanceController = TextEditingController();
-  final TextEditingController _fuelController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
-  String _result = "Consum mediu: - l/100 km";
+class _DiscountCalculatorPageState extends State<DiscountCalculatorPage> {
+final TextEditingController _priceController = TextEditingController();
+final TextEditingController _discountController = TextEditingController();
 
-  void _calculateConsumption() {
-    final double? distance = double.tryParse(_distanceController.text);
-    final double? fuel = double.tryParse(_fuelController.text);
-    final double? time = double.tryParse(_timeController.text);
+double _discountValue = 0.0;
+double _finalPrice = 0.0;
 
-    setState(() {
-      if (distance != null && fuel != null) {
-        if (distance > 0) {
-          // Cazul normal: mașina s-a mișcat
-          final double consumption = (fuel / distance) * 100;
-          _result = "Consum mediu: ${consumption.toStringAsFixed(2)} l/100 km";
-        } else if (distance == 0 && fuel > 0) {
-          // Cazul special: motor pornit pe loc
-          if (time != null && time > 0) {
-            final double consumptionPerHour = fuel / time;
-            _result = "Consum la oră: ${consumptionPerHour.toStringAsFixed(2)} l/h";
-          } else {
-            _result = "Introdu timpul (ore) pentru calculul l/h!";
-          }
-        } else if (distance == 0 && fuel == 0) {
-          _result = "Mașina este oprită.";
-        }
-      } else {
-        _result = "Vă rugăm să introduceți date valide!";
-      }
-    });
-  }
+String _selectedFixedDiscount = '10%';
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calculator Consum'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Calculator Consum Combustibil',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _distanceController,
-              decoration: const InputDecoration(
-                labelText: 'Distanța parcursă (km)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _fuelController,
-              decoration: const InputDecoration(
-                labelText: 'Combustibil consumat (litri)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _timeController,
-              decoration: const InputDecoration(
-                labelText: 'Timp petrecut pe loc (ore)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateConsumption,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text('Calculează'),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
+void _calculate() {
+double price = double.tryParse(_priceController.text) ?? 0.0;
+double discountPercent = double.tryParse(_discountController.text) ?? 0.0;
+
+setState(() {
+_discountValue = (price * discountPercent) / 100;
+_finalPrice = price - _discountValue;
+});
+}
+
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+appBar: AppBar(
+title: const Text('Calculator Reducere'),
+backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+),
+body: SingleChildScrollView(
+padding: const EdgeInsets.all(16.0),
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.stretch,
+children: [
+TextField(
+controller: _priceController,
+keyboardType: TextInputType.number,
+decoration: const InputDecoration(
+labelText: 'Preț inițial',
+border: OutlineInputBorder(),
+prefixIcon: Icon(Icons.attach_money),
+),
+),
+const SizedBox(height: 16),
+TextField(
+controller: _discountController,
+keyboardType: TextInputType.number,
+decoration: const InputDecoration(
+labelText: 'Procent reducere (%)',
+border: OutlineInputBorder(),
+prefixIcon: Icon(Icons.percent),
+),
+),
+const SizedBox(height: 20),
+const Text('Selecție rapidă:',
+style: TextStyle(fontWeight: FontWeight.bold)),
+
+// DropdownButton
+Row(
+children: [
+const Text('Alege din listă: '),
+DropdownButton<String>(
+value: _selectedFixedDiscount,
+items: <String>['5%', '10%', '20%', '50%'].map((String value) {
+return DropdownMenuItem<String>(
+value: value,
+child: Text(value),
+);
+}).toList(),
+onChanged: (newValue) {
+setState(() {
+_selectedFixedDiscount = newValue!;
+_discountController.text = newValue.replaceAll('%', '');
+});
+},
+),
+],
+),
+  // RadioButtons
+  Row(
+    children: [
+      const Text('Opțiuni radio: '),
+      Expanded(
+        child: RadioListTile<String>(
+          title: const Text('10%'),
+          value: '10',
+          groupValue: _discountController.text,
+          onChanged: (value) {
+            setState(() {
+              _discountController.text = value!;
+            });
+          },
         ),
       ),
-    );
-  }
+      Expanded(
+        child: RadioListTile<String>(
+          title: const Text('20%'),
+          value: '20',
+          groupValue: _discountController.text,
+          onChanged: (value) {
+            setState(() {
+              _discountController.text = value!;
+            });
+          },
+        ),
+      ),
+    ],
+  ),
 
-  @override
-  void dispose() {
-    _distanceController.dispose();
-    _fuelController.dispose();
-    _timeController.dispose();
-    super.dispose();
-  }
+  const SizedBox(height: 20),
+  ElevatedButton(
+    onPressed: _calculate,
+    style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+    ),
+    child: const Text('CALCULEAZĂ', style: TextStyle(fontSize: 18)),
+  ),
+  const SizedBox(height: 30),
+  Card(
+    color: Colors.blue.shade50,
+    elevation: 4,
+    child: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          Text(
+            'Valoare reducere: ${_discountValue.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
+          const Divider(height: 30),
+          Text(
+            'Preț final: ${_finalPrice.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.blue),
+          ),
+        ],
+      ),
+    ),
+  ),
+],
+),
+),
+);
+}
 }
