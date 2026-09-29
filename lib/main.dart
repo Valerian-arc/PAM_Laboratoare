@@ -1,133 +1,69 @@
 import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+import 'screens/courses_screen.dart';
+import 'widgets/custom_bottom_nav.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const LearningApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LearningApp extends StatelessWidget {
+  const LearningApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calculator Consum Combustibil',
+      title: 'Learning App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xFFF8F9FB),
+        primaryColor: const Color(0xFF3D5CFF),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF3D5CFF),
+          primary: const Color(0xFF3D5CFF),
+          secondary: const Color(0xFFFF6B00),
+        ),
       ),
-      home: const FuelCalculatorScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }
 
-class FuelCalculatorScreen extends StatefulWidget {
-  const FuelCalculatorScreen({super.key});
+class MainNavigationScreen extends StatefulWidget {
+  const MainNavigationScreen({super.key});
 
   @override
-  State<FuelCalculatorScreen> createState() => _FuelCalculatorScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _FuelCalculatorScreenState extends State<FuelCalculatorScreen> {
-  final TextEditingController _distanceController = TextEditingController();
-  final TextEditingController _fuelController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
-  String _result = "Consum mediu: - l/100 km";
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
 
-  void _calculateConsumption() {
-    final double? distance = double.tryParse(_distanceController.text);
-    final double? fuel = double.tryParse(_fuelController.text);
-    final double? time = double.tryParse(_timeController.text);
-
-    setState(() {
-      if (distance != null && fuel != null) {
-        if (distance > 0) {
-          // Cazul normal: mașina s-a mișcat
-          final double consumption = (fuel / distance) * 100;
-          _result = "Consum mediu: ${consumption.toStringAsFixed(2)} l/100 km";
-        } else if (distance == 0 && fuel > 0) {
-          // Cazul special: motor pornit pe loc
-          if (time != null && time > 0) {
-            final double consumptionPerHour = fuel / time;
-            _result = "Consum la oră: ${consumptionPerHour.toStringAsFixed(2)} l/h";
-          } else {
-            _result = "Introdu timpul (ore) pentru calculul l/h!";
-          }
-        } else if (distance == 0 && fuel == 0) {
-          _result = "Mașina este oprită.";
-        }
-      } else {
-        _result = "Vă rugăm să introduceți date valide!";
-      }
-    });
-  }
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const CoursesScreen(),
+    const Center(child: Text('Search Screen', style: TextStyle(color: Color(0xFF858597)))),
+    const Center(child: Text('Message Screen', style: TextStyle(color: Color(0xFF858597)))),
+    const Center(child: Text('Account Screen', style: TextStyle(color: Color(0xFF858597)))),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calculator Consum'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Calculator Consum Combustibil',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _distanceController,
-              decoration: const InputDecoration(
-                labelText: 'Distanța parcursă (km)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _fuelController,
-              decoration: const InputDecoration(
-                labelText: 'Combustibil consumat (litri)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _timeController,
-              decoration: const InputDecoration(
-                labelText: 'Timp petrecut pe loc (ore)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _calculateConsumption,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text('Calculează'),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _distanceController.dispose();
-    _fuelController.dispose();
-    _timeController.dispose();
-    super.dispose();
   }
 }
