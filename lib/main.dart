@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'screens/home_screen.dart';
-import 'screens/courses_screen.dart';
+import 'screens/course_overview_screen.dart';
 import 'widgets/custom_bottom_nav.dart';
 
 void main() {
@@ -41,29 +42,35 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const HomeScreen(),
-    const CoursesScreen(),
-    const Center(child: Text('Search Screen', style: TextStyle(color: Color(0xFF858597)))),
-    const Center(child: Text('Message Screen', style: TextStyle(color: Color(0xFF858597)))),
-    const Center(child: Text('Account Screen', style: TextStyle(color: Color(0xFF858597)))),
+    CourseOverviewScreen(onBack: () => setState(() => _currentIndex = 0)),
+    const Center(
+      child: Text('Search Screen', style: TextStyle(color: Color(0xFF858597))),
+    ),
+    const Center(
+      child: Text('Message Screen', style: TextStyle(color: Color(0xFF858597))),
+    ),
+    const Center(
+      child: Text('Account Screen', style: TextStyle(color: Color(0xFF858597))),
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: CustomBottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
+      // The Course Overview page (tab 2) is full-screen in the design.
+      bottomNavigationBar: _currentIndex == 1
+          ? null
+          : CustomBottomNav(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+            ),
     );
   }
 }
